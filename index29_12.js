@@ -391,4 +391,45 @@
 //     console.log(err)
 // });
 
-//////////////////////////////////////////// hii demo
+//////////////////////////////////////////// 
+
+// This keywork:
+
+
+// let a = {
+//     name:'mihiraval',
+//     age:19,
+//     work:'Developement',
+//     mcr:function(){
+//         console.log("My name is " + this.name + "age is " + this.age + " & work is " + this.work);
+//     }
+// }
+// // a.mcr();
+// console.log(a.mcr());
+
+// function mihir(){
+//     console.log("hell",this);
+// }
+
+// mihir();
+
+/////////////////////////////////////////////////////////
+
+//constructor function 
+//In constructor function name first latter in capital latter.
+//In constructor use new & this keyword 
+// function Mihir (name,age,work){
+//     this.name = name;
+//     this.age = age;
+//     this.work = work;
+// }
+
+// const mcr = new Mihir('mihir',19,'developer');
+// const mcr1 = new Mihir('m',199,'developer');
+
+// console.log(mcr.name);
+
+// for(let m in mcr){
+//     console.log(m+ " : "+mcr[m]);
+// }
+//////////////////////////////////////////////////
