@@ -1,12 +1,12 @@
-// let a = [1,5,2,6,3,99,70,89,10];
+let a = [1,5,2,6,3,99,70,89,0];
 // let b = [10,20,30,40,50,60,70,800];
 
 
-// console.log(a.concat(b));
+// console.log(a.concat(b));   //merge two array
 
-// console.log(a.indexOf(6));
+// console.log(a.indexOf(10));  //show index No of entered value like a 10
 
-// console.log(a.slice(0,7));
+// console.log(a.slice(5,9));
 
 // console.log(a.reverse());
 
@@ -44,10 +44,10 @@
 // ? filter()
 
 // let b = a.filter((v)=>{
-//     // if(v>=1 && v<=5){
+//     if(v>=1 && v<=5){
 
-//     //     return v;
-//     // }
+//         return v;
+//     }
 
 // })
 
@@ -391,7 +391,8 @@
 //     console.log(err)
 // });
 
-//////////////////////////////////////////// 
+////////////////////////////////////////////
+
 
 // This keywork:
 
@@ -433,3 +434,49 @@
 //     console.log(m+ " : "+mcr[m]);
 // }
 //////////////////////////////////////////////////
+
+
+//proto & prototype
+
+
+// let m = {
+//     name:'mihir'
+// }
+// let a = {
+//     age:19
+// }
+// a.__proto__ = m;
+// console.log(a.name)
+
+// let m = {
+//     name:'mihir'
+// }
+
+// a = Object.create(m);
+// a.age = 19;
+// console.log(a)
+
+
+//prototype work is pending..............
+
+
+///////////////////////////////////////////////////////////
+
+//class
+
+// class Mihir{
+//     constructor(name,age,city){
+//         this.name = name;
+//         this.age = age;
+//         this.city = city;
+//     }
+//     fun(){
+//         console.log(this.name);
+//         console.log(this.age);
+//         console.log(this.city);
+//     }
+// }
+
+// const N_obj = new Mihir("mihir",19,"ahm");
+// N_obj.fun();
+// console.log(N_obj)
