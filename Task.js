@@ -50,3 +50,24 @@
 // const refre = new Person("mihir",19);
 
 // console.log(refre);
+
+const students = [
+    { name: "John", score: 85 },
+    { name: "Alice", score: 92 },
+    { name: "Bob", score: 78 },
+    { name: "Charlie", score: 95 },
+    { name: "David", score: 88 },
+];
+
+
+
+// const fill = students.filter((v)=>{
+//     if(v.score>=80){
+//         console.log(v)
+//         return v;
+//     }
+// })
+// console.log(fill);
+// const add = students.map((v)=>{
+//     return {...v,score:v.score+5};
+// })
