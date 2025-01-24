@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Signature Canvas</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            background: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            width: 600px;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        canvas {
+            border: 2px dashed #6c757d;
+            border-radius: 8px;
+            margin: 20px 0;
+            cursor: crosshair;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        button, .color-picker {
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .color-picker {
+            background-color: #fff;
+            border: 2px solid #007bff;
+        }
+
+        .saved-signatures {
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .saved-signatures h3 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .signature-thumb {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            background: #f1f1f1;
+            border-radius: 5px;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .signature-thumb img {
+            max-width: 80px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .signature-info {
+            margin-left: 10px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .btn-group-action {
+            display: flex;
+            gap: 5px;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: #fff;
+            font-size: 12px;
+        }
+
+        .delete-btn:hover {
+            background-color: #a71d2a;
+        }
+
+        .edit-btn {
+            background-color: #28a745;
+            color: #fff;
+            font-size: 12px;
+        }
+
+        .edit-btn:hover {
+            background-color: #19692c;
+        }
+
+        .signature-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .no-signatures {
+            text-align: center;
+            font-size: 14px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Modern Signature Canvas</h2>
+        <canvas id="signatureCanvas" width="500" height="200"></canvas>
+
+        <!-- Button Group -->
+        <div class="btn-group">
+            <button id="clearBtn">Clear</button>
+            <button id="saveBtn">Save Signature</button>
+            <button id="downloadBtn">Download PDF</button>
+            <input type="color" id="colorPicker" class="color-picker" value="#000000">
+        </div>
+
+        <!-- Saved Signatures Section -->
+        <div class="saved-signatures">
+            <h3>Saved Signatures:</h3>
+            <div id="signatureList" class="signature-list">
+                <p class="no-signatures">No signatures saved yet.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS Script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        const canvas = document.getElementById("signatureCanvas");
+        const ctx = canvas.getContext("2d");
+    
+        let isDrawing = false;
+        let penColor = "#000000"; // Default pen color (black)
+        let savedSignatures = []; // Array to store saved signatures with metadata
+        let editingIndex = null; // To track which signature is being edited
+        let isErasing = false; // To track erase mode
+    
+        // Set pen color based on color picker input
+        document.getElementById("colorPicker").addEventListener("input", (e) => {
+            penColor = e.target.value;
+        });
+    
+        // Start drawing or erasing
+        canvas.addEventListener("mousedown", (e) => {
+            isDrawing = true;
+            ctx.beginPath();
+            ctx.moveTo(e.offsetX, e.offsetY);
+            ctx.strokeStyle = isErasing ? "#ffffff" : penColor; // White color for erasing
+            ctx.lineWidth = isErasing ? 10 : 2; // Thicker line for erasing
+        });
+    
+        // Draw or erase on the canvas
+        canvas.addEventListener("mousemove", (e) => {
+            if (isDrawing) {
+                ctx.lineTo(e.offsetX, e.offsetY);
+                ctx.stroke();
+            }
+        });
+    
+        // Stop drawing or erasing
+        canvas.addEventListener("mouseup", () => {
+            isDrawing = false;
+        });
+    
+        // Clear the canvas
+        document.getElementById("clearBtn").addEventListener("click", () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            editingIndex = null; // Reset editing mode
+        });
+    
+        // Check if canvas is blank
+        function isCanvasBlank(canvas) {
+            const blank = document.createElement("canvas");
+            blank.width = canvas.width;
+            blank.height = canvas.height;
+            return canvas.toDataURL() === blank.toDataURL();
+        }
+    
+        // Save or update the current signature
+        document.getElementById("saveBtn").addEventListener("click", () => {
+            if (isCanvasBlank(canvas)) {
+                alert("Cannot save a blank canvas!");
+                return;
+            }
+    
+            const dataURL = canvas.toDataURL("image/png");
+            const timestamp = new Date().toLocaleString(); // Get current date and time
+    
+            if (editingIndex !== null) {
+                // Update the existing signature
+                savedSignatures[editingIndex].data = dataURL;
+                savedSignatures[editingIndex].timestamp = timestamp;
+                editingIndex = null; // Reset editing mode
+            } else {
+                // Save a new signature
+                savedSignatures.push({ data: dataURL, timestamp: timestamp });
+            }
+    
+            updateSignatureList();
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas after saving
+        });
+    
+        // Update the list of saved signatures
+        function updateSignatureList() {
+            const signatureList = document.getElementById("signatureList");
+            signatureList.innerHTML = ""; // Clear current list
+    
+            savedSignatures.forEach((signature, index) => {
+                const signatureThumb = document.createElement("div");
+                signatureThumb.classList.add("signature-thumb");
+    
+                const img = document.createElement("img");
+                img.src = signature.data;
+                img.alt = `Signature ${index + 1}`;
+    
+                const info = document.createElement("div");
+                info.classList.add("signature-info");
+                info.innerText = `Saved on: ${signature.timestamp}`;
+    
+                // Edit button
+                const editBtn = document.createElement("button");
+                editBtn.innerText = "Edit";
+                editBtn.classList.add("edit-btn");
+                editBtn.onclick = () => editSignature(index);
+    
+                // Delete button
+                const deleteBtn = document.createElement("button");
+                deleteBtn.innerText = "X";
+                deleteBtn.classList.add("delete-btn");
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation(); // Prevent triggering the edit function
+                    deleteSignature(index);
+                };
+    
+                signatureThumb.appendChild(img);
+                signatureThumb.appendChild(info);
+                signatureThumb.appendChild(editBtn);
+                signatureThumb.appendChild(deleteBtn);
+                signatureList.appendChild(signatureThumb);
+            });
+        }
+    
+        // Delete a saved signature
+        function deleteSignature(index) {
+            savedSignatures.splice(index, 1); // Remove the signature from the list
+            updateSignatureList(); // Refresh the displayed list
+        }
+    
+        // Edit a saved signature
+        function editSignature(index) {
+            editingIndex = index; // Track which signature is being edited
+            const signatureData = savedSignatures[index].data;
+            const img = new Image();
+            img.src = signatureData;
+            img.onload = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height); // Draw the saved signature
+            };
+        }
+    
+        // Download the canvas content as a PDF
+        document.getElementById("downloadBtn").addEventListener("click", () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+    
+            // Convert canvas to image
+            const dataURL = canvas.toDataURL("image/png");
+    
+            // Add image to PDF
+            doc.addImage(dataURL, 'PNG', 10, 10, 180, 90);
+            doc.save("signature.pdf");
+        });
+    
+        // Toggle Erase Mode
+        const eraseBtn = document.createElement("button");
+        eraseBtn.innerText = "Erase";
+        eraseBtn.style.marginLeft = "10px";
+        eraseBtn.style.padding = "10px";
+        eraseBtn.style.backgroundColor = "#ffc107";
+        eraseBtn.style.color = "#fff";
+        eraseBtn.style.border = "none";
+        eraseBtn.style.cursor = "pointer";
+        eraseBtn.style.borderRadius = "5px";
+    
+        eraseBtn.addEventListener("click", () => {
+            isErasing = !isErasing;
+            eraseBtn.innerText = isErasing ? "Drawing Mode" : "Erase";
+            eraseBtn.style.backgroundColor = isErasing ? "#dc3545" : "#ffc107";
+        });
+    
+        document.querySelector(".btn-group").appendChild(eraseBtn);
+    </script>
+    
+    
+</body>
+</html>
